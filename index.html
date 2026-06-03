@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MINT_BOT — Never Miss A Drop</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06040a;
+  --surface: #0d0a14;
+  --card: #100d1a;
+  --card2: #130f1f;
+  --border: rgba(255,255,255,0.06);
+  --red: #c0392b;
+  --red2: #8b1a12;
+  --red-glow: rgba(192,57,43,0.15);
+  --purple: #6b21a8;
+  --purple2: #4c1d95;
+  --purple-glow: rgba(107,33,168,0.15);
+  --pink: #be185d;
+  --text: #ede8f5;
+  --muted: rgba(237,232,245,0.38);
+  --muted2: rgba(237,232,245,0.55);
+  --accent: #7c3aed;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Cursor */
+.cursor { width:10px;height:10px;background:#fff;border-radius:50%;position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform 0.1s; }
+.cursor-ring { width:36px;height:36px;border:1px solid rgba(255,255,255,0.25);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transition:all 0.1s ease; }
+
+/* Noise */
+body::after {
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:1000;
+}
+
+/* ── NAV ── */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;
+  background:rgba(6,4,10,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:4px;color:var(--text); }
+.nav-logo span { color:var(--red); }
+.nav-links { display:flex;gap:32px;list-style:none; }
+.nav-links a { color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:500;letter-spacing:0.5px;transition:color 0.2s; }
+.nav-links a:hover { color:var(--text); }
+.nav-cta {
+  background:var(--red);color:#fff !important;font-weight:600 !important;
+  padding:9px 22px;border-radius:6px;letter-spacing:0.5px;transition:background 0.2s !important;
+}
+.nav-cta:hover { background:#a93226 !important; }
+
+/* ── HERO ── */
+.hero {
+  min-height:100vh;display:flex;align-items:center;
+  padding:100px 48px 60px;position:relative;overflow:hidden;
+  gap:80px;
+}
+
+/* Deep background gradient */
+.hero::before {
+  content:'';position:absolute;inset:0;
+  background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(107,33,168,0.12) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 50% at 20% 60%, rgba(139,26,18,0.1) 0%, transparent 60%);
+}
+
+.hero-left { position:relative;z-index:2;flex:1;max-width:560px; }
+
+.hero-badge {
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.25);
+  color:#e07060;padding:7px 18px;border-radius:4px;
+  font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:28px;
+}
+.live-dot { width:6px;height:6px;background:#e07060;border-radius:50%;animation:blink 1.5s infinite;box-shadow:0 0 6px #e07060; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(4.5rem,10vw,9rem);
+  line-height:0.9;letter-spacing:2px;margin-bottom:24px;
+}
+h1 .stroke { -webkit-text-stroke:1.5px rgba(237,232,245,0.6);color:transparent;display:block; }
+h1 .solid { color:var(--text);display:block; }
+h1 .red { color:var(--red);display:block;text-shadow:0 0 40px rgba(192,57,43,0.4); }
+
+.hero-sub {
+  font-size:1.05rem;color:var(--muted2);line-height:1.75;
+  margin-bottom:40px;font-weight:300;max-width:440px;
+}
+
+.hero-btns { display:flex;gap:12px;flex-wrap:wrap; }
+
+.btn-red {
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--red);color:#fff;font-weight:600;font-size:0.92rem;
+  padding:14px 28px;border-radius:6px;text-decoration:none;
+  transition:all 0.2s;letter-spacing:0.3px;
+  box-shadow:0 0 24px rgba(192,57,43,0.2);
+}
+.btn-red:hover { background:#a93226;transform:translateY(-2px);box-shadow:0 0 36px rgba(192,57,43,0.35); }
+
+.btn-outline {
+  display:inline-flex;align-items:center;gap:10px;
+  background:transparent;color:var(--muted2);font-weight:500;font-size:0.92rem;
+  padding:14px 28px;border-radius:6px;text-decoration:none;
+  border:1px solid var(--border);transition:all 0.2s;
+}
+.btn-outline:hover { border-color:rgba(255,255,255,0.15);color:var(--text); }
+
+/* Chain pills */
+.chains { display:flex;gap:10px;flex-wrap:wrap;margin-top:32px; }
+.chain {
+  display:flex;align-items:center;gap:7px;
+  background:var(--card);border:1px solid var(--border);
+  padding:6px 14px;border-radius:4px;font-size:0.78rem;font-weight:500;color:var(--muted2);
+}
+
+/* ── HERO RIGHT — NFT card grid ── */
+.hero-right {
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:10px;width:480px;flex-shrink:0;
+}
+
+.hnft {
+  border-radius:12px;overflow:hidden;
+  background:var(--card);border:1px solid var(--border);
+  position:relative;transition:transform 0.3s,border-color 0.3s;
+}
+.hnft:hover { transform:translateY(-4px);border-color:rgba(107,33,168,0.4); }
+.hnft.tall { grid-row:span 2; }
+
+.hnft-art {
+  position:relative;overflow:hidden;
+  background:var(--card2);
+}
+.hnft.tall .hnft-art { height:100%;min-height:260px; }
+.hnft:not(.tall) .hnft-art { height:100px; }
+
+/* Moody dark NFT art palettes */
+.a1 { background:linear-gradient(160deg,#120020 0%,#2d0a5a 45%,#5b1fa0 75%,#1a0030 100%); }
+.a2 { background:linear-gradient(135deg,#0a0005 0%,#3b0a0a 40%,#7a1515 70%,#200005 100%); }
+.a3 { background:linear-gradient(200deg,#050010 0%,#0d0040 50%,#2a0a70 80%,#050010 100%); }
+.a4 { background:linear-gradient(45deg,#100010 0%,#4a0a4a 50%,#8b1a8b 75%,#100010 100%); }
+.a5 { background:linear-gradient(135deg,#070005 0%,#200020 40%,#6b1060 70%,#070005 100%); }
+.a6 { background:linear-gradient(180deg,#050010 0%,#0a003a 50%,#200a60 80%,#050010 100%); }
+.a7 { background:linear-gradient(225deg,#0a0005 0%,#2d0015 40%,#7a1030 70%,#0a0005 100%); }
+
+.hnft-art::after { content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.7) 100%); }
+
+/* Floating shapes inside art */
+.shape {
+  position:absolute;border-radius:50%;mix-blend-mode:screen;
+}
+
+.hnft-foot { padding:10px 12px; }
+.hnft-col { font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px; }
+.hnft-nm { font-size:0.8rem;font-weight:600;margin-bottom:6px; }
+.hnft-row { display:flex;justify-content:space-between;align-items:center; }
+.hnft-price { font-family:'DM Mono',monospace;font-size:0.72rem; }
+.badge { font-size:0.6rem;padding:3px 8px;border-radius:3px;font-family:'DM Mono',monospace;letter-spacing:1px;font-weight:500; }
+.b-live { background:rgba(139,26,18,0.3);color:#e07060; }
+.b-soon { background:rgba(76,29,149,0.3);color:#a78bfa; }
+.b-minted { background:rgba(22,78,22,0.3);color:#86efac; }
+.b-watch { background:rgba(40,30,10,0.3);color:#fbbf24; }
+
+/* Bot status overlay on NFT card hover */
+.bot-tag {
+  position:absolute;bottom:8px;left:8px;right:8px;z-index:5;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+  border-radius:5px;padding:6px 10px;
+  font-family:'DM Mono',monospace;font-size:0.62rem;color:#a78bfa;
+  opacity:0;transition:opacity 0.3s;
+  border:1px solid rgba(107,33,168,0.3);
+}
+.hnft:hover .bot-tag { opacity:1; }
+
+/* ── MARQUEE ── */
+.marquee-wrap {
+  overflow:hidden;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--surface);padding:12px 0;
+}
+.marquee-track {
+  display:flex;gap:0;
+  animation:marquee 25s linear infinite;white-space:nowrap;
+}
+.marquee-track span { font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:3px;padding:0 36px;color:var(--muted); }
+.marquee-track .r { color:var(--red); }
+.marquee-track .p { color:#7c3aed; }
+@keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
+
+/* ── SECTIONS ── */
+.sect { padding:90px 48px;max-width:1200px;margin:0 auto; }
+
+.stag { font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:12px; }
+
+.big-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.8rem,5vw,5rem);
+  letter-spacing:2px;line-height:1;margin-bottom:14px;
+}
+.big-title span { color:var(--red); }
+
+.sect-sub { color:var(--muted2);font-size:1rem;font-weight:300;line-height:1.7;max-width:500px;margin-bottom:56px; }
+
+/* ── BIG NFT GALLERY ── */
+.gallery-section { padding:0 48px 90px;max-width:1200px;margin:0 auto; }
+
+.gallery-header { text-align:center;margin-bottom:48px; }
+
+.nft-gallery {
+  columns:5;column-gap:10px;
+}
+
+@media(max-width:1100px){ .nft-gallery{columns:3;} }
+@media(max-width:700px){ .nft-gallery{columns:2;} }
+
+.gcard {
+  break-inside:avoid;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:10px;
+  transition:transform 0.3s,border-color 0.3s;cursor:pointer;
+  position:relative;
+}
+.gcard:hover { transform:translateY(-5px);border-color:rgba(107,33,168,0.4); }
+
+.gcard-art {
+  position:relative;overflow:hidden;
+  width:100%;
+}
+.gcard-art::after { content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,0.75) 100%); }
+
+/* More dark moody art styles */
+.g1  { background:linear-gradient(150deg,#0a0018 0%,#1e0050 40%,#4b0082 65%,#300060 100%);padding-top:100%; }
+.g2  { background:linear-gradient(110deg,#0f0005 0%,#3a0010 45%,#800020 70%,#0f0005 100%);padding-top:130%; }
+.g3  { background:linear-gradient(160deg,#05000a 0%,#150030 45%,#3d0075 70%,#05000a 100%);padding-top:85%; }
+.g4  { background:linear-gradient(200deg,#080005 0%,#280008 45%,#6b001a 70%,#080005 100%);padding-top:115%; }
+.g5  { background:linear-gradient(130deg,#030010 0%,#0a0045 40%,#2200a0 65%,#030010 100%);padding-top:100%; }
+.g6  { background:linear-gradient(50deg,#080010 0%,#200a40 45%,#580099 70%,#080010 100%);padding-top:120%; }
+.g7  { background:linear-gradient(170deg,#05000a 0%,#1a0030 40%,#500060 65%,#05000a 100%);padding-top:90%; }
+.g8  { background:linear-gradient(90deg,#0a0008 0%,#380015 45%,#880030 70%,#0a0008 100%);padding-top:110%; }
+.g9  { background:linear-gradient(220deg,#030008 0%,#0d0030 40%,#2800a0 65%,#030008 100%);padding-top:100%; }
+.g10 { background:linear-gradient(140deg,#07000a 0%,#250020 45%,#700060 70%,#07000a 100%);padding-top:125%; }
+.g11 { background:linear-gradient(70deg,#0a0005 0%,#2a000a 40%,#750018 65%,#0a0005 100%);padding-top:95%; }
+.g12 { background:linear-gradient(190deg,#050015 0%,#180045 45%,#4500a5 70%,#050015 100%);padding-top:110%; }
+.g13 { background:linear-gradient(160deg,#080005 0%,#300010 45%,#8a0025 70%,#080005 100%);padding-top:100%; }
+.g14 { background:linear-gradient(115deg,#030010 0%,#0c003a 40%,#280090 65%,#030010 100%);padding-top:120%; }
+.g15 { background:linear-gradient(235deg,#060008 0%,#1d0028 40%,#5c0080 65%,#060008 100%);padding-top:90%; }
+
+/* Add some inner shapes to art */
+.gcard-art .s { position:absolute;border-radius:50%;mix-blend-mode:screen;opacity:0.5; }
+
+.gcard-info {
+  padding:10px 14px 14px;
+  position:relative;z-index:2;
+}
+.gcard-col { font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px; }
+.gcard-name { font-size:0.82rem;font-weight:600;margin-bottom:7px; }
+.gcard-bot { font-family:'DM Mono',monospace;font-size:0.6rem;color:#a78bfa;background:rgba(107,33,168,0.12);padding:3px 8px;border-radius:3px; }
+
+/* BOT status badge overlay */
+.gcard-overlay {
+  position:absolute;top:8px;right:8px;z-index:5;
+}
+
+/* ── FEATURES ── */
+.feats {
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:16px;overflow:hidden;
+}
+.f {
+  background:var(--card);padding:36px 32px;
+  position:relative;overflow:hidden;transition:background 0.25s;
+}
+.f:hover { background:#14101f; }
+.f::after {
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.f:hover::after { opacity:1; }
+.f-num { font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:var(--muted);margin-bottom:18px;display:block; }
+.f-icon { font-size:2rem;margin-bottom:12px;display:block; }
+.f-ttl { font-weight:700;font-size:1rem;margin-bottom:10px; }
+.f-desc { font-size:0.86rem;color:var(--muted2);line-height:1.65;font-weight:300; }
+
+/* ── SPEED ── */
+.speed-grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:20px;align-items:center;
+}
+
+.speed-stats { display:flex;flex-direction:column;gap:0; }
+
+.sp {
+  display:flex;align-items:flex-start;gap:20px;
+  padding:28px 0;border-bottom:1px solid var(--border);
+}
+.sp:last-child { border-bottom:none; }
+.sp-val {
+  font-family:'Bebas Neue',sans-serif;font-size:3.2rem;
+  line-height:1;min-width:100px;
+  color:var(--text);letter-spacing:1px;
+}
+.sp:nth-child(1) .sp-val { color:#e07060; }
+.sp:nth-child(2) .sp-val { color:#a78bfa; }
+.sp:nth-child(3) .sp-val { color:#86efac; }
+
+.sp-txt strong { display:block;font-size:0.92rem;margin-bottom:5px; }
+.sp-txt span { font-size:0.84rem;color:var(--muted2);font-weight:300;line-height:1.55; }
+
+.term {
+  background:#07050f;border:1px solid rgba(107,33,168,0.2);
+  border-radius:14px;overflow:hidden;
+}
+.term-top {
+  background:rgba(255,255,255,0.03);padding:11px 18px;
+  display:flex;align-items:center;gap:7px;
+  border-bottom:1px solid var(--border);
+}
+.td { width:9px;height:9px;border-radius:50%; }
+.td.r{background:#ff5f57}.td.y{background:#ffbd2e}.td.g{background:#28c940}
+.term-lbl { font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-left:6px;letter-spacing:1px; }
+.term-body { padding:22px;font-family:'DM Mono',monospace;font-size:0.76rem;line-height:1.95; }
+.tl { display:block;opacity:0;animation:fadeIn 0.3s forwards; }
+.tl.g2{color:#86efac} .tl.p{color:#a78bfa} .tl.r2{color:#e07060} .tl.y{color:#fbbf24} .tl.m{color:var(--muted)}
+@keyframes fadeIn{to{opacity:1}}
+
+/* ── PRICING ── */
+.price-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:720px;margin:0 auto; }
+
+.pc {
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:38px 36px;
+  position:relative;overflow:hidden;transition:transform 0.2s;
+}
+.pc:hover { transform:translateY(-4px); }
+.pc.hot {
+  border-color:rgba(192,57,43,0.3);
+  background:linear-gradient(135deg,#100d1a 0%,#180a0a 100%);
+}
+.pc.hot::before {
+  content:'POPULAR';position:absolute;top:20px;right:-28px;
+  background:var(--red);color:#fff;font-size:0.58rem;font-weight:700;
+  font-family:'DM Mono',monospace;letter-spacing:2px;padding:4px 40px;
+  transform:rotate(40deg);
+}
+.pc-lbl { font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:18px; }
+.pc-big { font-family:'Bebas Neue',sans-serif;font-size:4.5rem;line-height:1;letter-spacing:-1px;margin-bottom:3px; }
+.pc.hot .pc-big { color:#e07060; }
+.pc-per { font-size:0.8rem;color:var(--muted);margin-bottom:26px;font-weight:300; }
+.pc-feats { list-style:none;margin-bottom:28px; }
+.pc-feats li { padding:8px 0;font-size:0.86rem;color:var(--muted2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;font-weight:300; }
+.pc-feats li .ck { color:#86efac;font-weight:700; }
+.pc-tok { font-family:'DM Mono',monospace;font-size:0.66rem;color:rgba(192,57,43,0.5);margin-bottom:22px;letter-spacing:0.5px; }
+
+/* ── DOCS ── */
+.docs-grid {
+  display:grid;grid-template-columns:200px 1fr;gap:44px;align-items:start;
+}
+.doc-nav { position:sticky;top:86px; }
+.doc-nav-lbl { font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px; }
+.doc-nav ul { list-style:none; }
+.doc-nav ul li { margin-bottom:2px; }
+.doc-nav ul a {
+  display:block;padding:7px 12px;border-radius:6px;
+  color:var(--muted);text-decoration:none;font-size:0.86rem;font-weight:400;
+  border-left:2px solid transparent;transition:all 0.2s;
+}
+.doc-nav ul a:hover,.doc-nav ul a.active { color:var(--text);border-left-color:var(--red);background:rgba(192,57,43,0.07); }
+
+.doc-blk { margin-bottom:48px;scroll-margin-top:86px; }
+.doc-blk h3 { font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px; }
+.doc-blk p { font-size:0.9rem;color:var(--muted2);line-height:1.8;margin-bottom:12px;font-weight:300; }
+.dstep { display:flex;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:8px;transition:border-color 0.2s; }
+.dstep:hover { border-color:rgba(192,57,43,0.2); }
+.dsn { width:24px;height:24px;background:var(--red);color:#fff;border-radius:50%;font-family:'DM Mono',monospace;font-size:0.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px; }
+.dsb strong { display:block;font-size:0.88rem;margin-bottom:3px; }
+.dsb span { font-size:0.82rem;color:var(--muted2);line-height:1.6;font-weight:300; }
+code { background:rgba(192,57,43,0.12);color:#e07060;padding:2px 7px;border-radius:4px;font-family:'DM Mono',monospace;font-size:0.82em; }
+.cblk { background:#05030c;border:1px solid var(--border);border-radius:8px;padding:18px 20px;font-family:'DM Mono',monospace;font-size:0.78rem;line-height:1.9;color:var(--muted);margin:12px 0;overflow-x:auto; }
+.cblk .g{color:#86efac}.cblk .p{color:#a78bfa}.cblk .r{color:#e07060}
+
+/* ── CTA ── */
+.cta-sec { padding:0 48px 90px; }
+.cta-inner {
+  max-width:1100px;margin:0 auto;
+  background:linear-gradient(135deg,#0e0a18 0%,#150a0a 50%,#0e0a18 100%);
+  border:1px solid rgba(192,57,43,0.15);border-radius:20px;
+  padding:80px 60px;text-align:center;position:relative;overflow:hidden;
+}
+.cta-inner::before {
+  content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(192,57,43,0.08) 0%,transparent 65%);
+  pointer-events:none;
+}
+.cta-inner h2 { font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,5.5vw,5rem);letter-spacing:2px;line-height:1;margin-bottom:14px; }
+.cta-inner h2 span { color:var(--red); }
+.cta-inner p { color:var(--muted2);font-size:1rem;margin-bottom:32px;font-weight:300; }
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--border);padding:28px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.f-logo { font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:4px;color:var(--text); }
+.f-logo span { color:var(--red); }
+.f-links { display:flex;gap:24px;list-style:none; }
+.f-links a { color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s; }
+.f-links a:hover { color:var(--text); }
+.f-copy { font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted); }
+
+/* ── FADE IN ── */
+.fi { opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease; }
+.fi.in { opacity:1;transform:none; }
+
+/* ── MOBILE ── */
+@media(max-width:960px){
+  nav{padding:14px 24px}
+  .nav-links{display:none}
+  .hero{flex-direction:column;padding:90px 24px 60px;gap:40px}
+  .hero-right{width:100%;grid-template-columns:1fr 1fr 1fr}
+  .nft-gallery{columns:3}
+  .feats{grid-template-columns:1fr}
+  .speed-grid{grid-template-columns:1fr}
+  .price-grid{grid-template-columns:1fr}
+  .docs-grid{grid-template-columns:1fr}
+  .doc-nav{display:none}
+  .sect,.gallery-section{padding-left:24px;padding-right:24px}
+  .cta-sec{padding-left:24px;padding-right:24px}
+  .cta-inner{padding:48px 28px}
+  footer{flex-direction:column;gap:16px;text-align:center;padding:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">MINT<span>_BOT</span></div>
+  <ul class="nav-links">
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#speed">Speed</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#docs">Docs</a></li>
+    <li><a href="https://t.me/ade_mintbot" target="_blank" class="nav-cta">Launch Bot</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left fi">
+    <div class="hero-badge"><span class="live-dot"></span> Live · Auto-minting now</div>
+    <h1>
+      <span class="stroke">NEVER</span>
+      <span class="solid">MISS</span>
+      <span class="red">A DROP.</span>
+    </h1>
+    <p class="hero-sub">The fastest NFT auto-mint bot on Telegram. Detects, snipes and mints any drop the moment it goes live.</p>
+    <div class="hero-btns">
+      <a href="https://t.me/ade_mintbot" target="_blank" class="btn-red">⚡ Start on Telegram</a>
+      <a href="#docs" class="btn-outline">Read Docs →</a>
+    </div>
+    <div class="chains">
+      <div class="chain">🔷 Ethereum</div>
+      <div class="chain">🔵 Base</div>
+      <div class="chain">🟣 Polygon</div>
+      <div class="chain">◎ Solana</div>
+    </div>
+  </div>
+
+  <div class="hero-right fi" style="transition-delay:0.15s;">
+    <!-- Tall card -->
+    <div class="hnft tall">
+      <div class="hnft-art a1">
+        <div class="shape" style="width:160px;height:160px;background:rgba(100,0,200,0.3);top:-30px;right:-40px;filter:blur(30px)"></div>
+        <div class="shape" style="width:100px;height:100px;background:rgba(180,0,80,0.2);bottom:40px;left:10px;filter:blur(20px)"></div>
+      </div>
+      <div class="bot-tag">⚡ BOT MINTED · 0.001 ETH · tx: 0xf99a...</div>
+      <div class="hnft-foot">
+        <div class="hnft-col">Onchain Meows</div>
+        <div class="hnft-nm">Meow #1337</div>
+        <div class="hnft-row"><span class="hnft-price">0.001 ETH</span><span class="badge b-live">● LIVE</span></div>
+      </div>
+    </div>
+    <!-- Top right -->
+    <div class="hnft"><div class="hnft-art a2"><div class="shape" style="width:80px;height:80px;background:rgba(200,0,40,0.3);top:-10px;right:-10px;filter:blur(15px)"></div></div><div class="bot-tag">🤖 AUTO-MINT ACTIVE</div><div class="hnft-foot"><div class="hnft-col">Whacky Whales</div><div class="hnft-nm">Whale #420</div><div class="hnft-row"><span class="hnft-price">0.00035</span><span class="badge b-live">● LIVE</span></div></div></div>
+    <div class="hnft"><div class="hnft-art a3"><div class="shape" style="width:70px;height:70px;background:rgba(40,0,180,0.4);bottom:-5px;right:-5px;filter:blur(15px)"></div></div><div class="bot-tag">⏰ Opens in 2h 14m</div><div class="hnft-foot"><div class="hnft-col">Kiki Cubs</div><div class="hnft-nm">Kiki #88</div><div class="hnft-row"><span class="hnft-price">0.0005</span><span class="badge b-soon">● SOON</span></div></div></div>
+    <!-- Bottom right -->
+    <div class="hnft"><div class="hnft-art a4"><div class="shape" style="width:90px;height:90px;background:rgba(120,0,120,0.3);top:0;left:-10px;filter:blur(20px)"></div></div><div class="bot-tag">✅ MINTED · 15 wallets</div><div class="hnft-foot"><div class="hnft-col">Scatter Drop</div><div class="hnft-nm">Gnome #69</div><div class="hnft-row"><span class="hnft-price">FREE</span><span class="badge b-minted">✓ DONE</span></div></div></div>
+    <div class="hnft"><div class="hnft-art a5"><div class="shape" style="width:70px;height:70px;background:rgba(180,0,100,0.3);bottom:10px;right:-5px;filter:blur(12px)"></div></div><div class="bot-tag">🎯 SNIPED at 0.05Ξ</div><div class="hnft-foot"><div class="hnft-col">Manifold</div><div class="hnft-nm">Token #2049</div><div class="hnft-row"><span class="hnft-price">0.001 ETH</span><span class="badge b-watch">◉ WATCH</span></div></div></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="r">⚡ AUTO-MINT</span><span>OPENSEA DROPS</span><span class="p">DIRECT CONTRACTS</span><span>MULTI-WALLET</span><span class="r">FLOOR SNIPER</span><span>COPY-MINT</span><span class="p">PREDICTIVE MINTING</span><span>ETH · BASE · POLYGON</span><span class="r">PRE-BUILT TX</span><span>3 RPC RACING</span><span class="p">ANY CONTRACT</span><span>INSTANT BROADCAST</span>
+    <span class="r">⚡ AUTO-MINT</span><span>OPENSEA DROPS</span><span class="p">DIRECT CONTRACTS</span><span>MULTI-WALLET</span><span class="r">FLOOR SNIPER</span><span>COPY-MINT</span><span class="p">PREDICTIVE MINTING</span><span>ETH · BASE · POLYGON</span><span class="r">PRE-BUILT TX</span><span>3 RPC RACING</span><span class="p">ANY CONTRACT</span><span>INSTANT BROADCAST</span>
+  </div>
+</div>
+
+<!-- NFT GALLERY -->
+<section id="gallery" class="gallery-section fi" style="padding-top:90px;">
+  <div class="gallery-header">
+    <span class="stag">// supported drops</span>
+    <h2 class="big-title">MINT <span>ANYTHING.</span></h2>
+  </div>
+
+  <div class="nft-gallery">
+    <!-- 15 cards -->
+    <div class="gcard"><div class="gcard-art g1"><div class="s" style="width:80px;height:80px;background:rgba(80,0,160,0.5);top:20%;left:20%;filter:blur(20px)"></div></div><div class="gcard-info"><div class="gcard-col">Onchain Meows</div><div class="gcard-name">Meow #1337</div><div class="gcard-bot">⚡ Minted</div></div><div class="gcard-overlay"><span class="badge b-live">LIVE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g2"><div class="s" style="width:60px;height:60px;background:rgba(150,0,30,0.5);top:30%;right:20%;filter:blur(15px)"></div></div><div class="gcard-info"><div class="gcard-col">Whacky Whales</div><div class="gcard-name">Whale #420</div><div class="gcard-bot">🤖 Auto-mint</div></div><div class="gcard-overlay"><span class="badge b-live">LIVE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g3"><div class="s" style="width:90px;height:90px;background:rgba(40,0,150,0.5);bottom:20%;left:30%;filter:blur(25px)"></div></div><div class="gcard-info"><div class="gcard-col">Kiki Cubs</div><div class="gcard-name">Kiki #88</div><div class="gcard-bot">⏰ Watching</div></div><div class="gcard-overlay"><span class="badge b-soon">SOON</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g4"><div class="s" style="width:70px;height:70px;background:rgba(120,0,20,0.5);top:25%;right:15%;filter:blur(18px)"></div></div><div class="gcard-info"><div class="gcard-col">Scatter Art</div><div class="gcard-name">Gnome #69</div><div class="gcard-bot">✅ 15 wallets</div></div><div class="gcard-overlay"><span class="badge b-minted">DONE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g5"><div class="s" style="width:100px;height:100px;background:rgba(30,0,180,0.4);top:10%;left:10%;filter:blur(28px)"></div></div><div class="gcard-info"><div class="gcard-col">Manifold Drop</div><div class="gcard-name">Token #2049</div><div class="gcard-bot">🎯 Sniped</div></div><div class="gcard-overlay"><span class="badge b-watch">WATCH</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g6"><div class="s" style="width:80px;height:80px;background:rgba(100,0,140,0.5);bottom:25%;right:20%;filter:blur(20px)"></div></div><div class="gcard-info"><div class="gcard-col">Art Blocks</div><div class="gcard-name">Fidenza #888</div><div class="gcard-bot">📋 Copy-mint</div></div><div class="gcard-overlay"><span class="badge b-soon">SOON</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g7"><div class="s" style="width:75px;height:75px;background:rgba(60,0,120,0.5);top:30%;left:25%;filter:blur(20px)"></div></div><div class="gcard-info"><div class="gcard-col">Nouns DAO</div><div class="gcard-name">Noun #444</div><div class="gcard-bot">⚡ Instant mint</div></div><div class="gcard-overlay"><span class="badge b-live">LIVE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g8"><div class="s" style="width:85px;height:85px;background:rgba(140,0,40,0.5);bottom:15%;left:20%;filter:blur(22px)"></div></div><div class="gcard-info"><div class="gcard-col">Azuki Elements</div><div class="gcard-name">Earth #521</div><div class="gcard-bot">🤖 Auto-mint</div></div><div class="gcard-overlay"><span class="badge b-minted">DONE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g9"><div class="s" style="width:70px;height:70px;background:rgba(20,0,160,0.5);top:20%;right:25%;filter:blur(18px)"></div></div><div class="gcard-info"><div class="gcard-col">DeGods</div><div class="gcard-name">DeGod #777</div><div class="gcard-bot">⏰ Watching</div></div><div class="gcard-overlay"><span class="badge b-watch">WATCH</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g10"><div class="s" style="width:95px;height:95px;background:rgba(100,0,100,0.5);bottom:20%;right:15%;filter:blur(25px)"></div></div><div class="gcard-info"><div class="gcard-col">CloneX</div><div class="gcard-name">Clone #333</div><div class="gcard-bot">✅ Minted</div></div><div class="gcard-overlay"><span class="badge b-minted">DONE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g11"><div class="s" style="width:80px;height:80px;background:rgba(160,0,30,0.5);top:15%;left:30%;filter:blur(20px)"></div></div><div class="gcard-info"><div class="gcard-col">Doodles</div><div class="gcard-name">Doodle #999</div><div class="gcard-bot">🎯 Floor snipe</div></div><div class="gcard-overlay"><span class="badge b-soon">SOON</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g12"><div class="s" style="width:90px;height:90px;background:rgba(40,0,180,0.5);bottom:25%;left:15%;filter:blur(22px)"></div></div><div class="gcard-info"><div class="gcard-col">Moonbirds</div><div class="gcard-name">Bird #1111</div><div class="gcard-bot">⚡ Minted</div></div><div class="gcard-overlay"><span class="badge b-live">LIVE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g13"><div class="s" style="width:75px;height:75px;background:rgba(130,0,25,0.5);top:25%;right:20%;filter:blur(18px)"></div></div><div class="gcard-info"><div class="gcard-col">CryptoPunks</div><div class="gcard-name">Punk #6969</div><div class="gcard-bot">📋 Copy-mint</div></div><div class="gcard-overlay"><span class="badge b-minted">DONE</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g14"><div class="s" style="width:85px;height:85px;background:rgba(25,0,140,0.5);bottom:20%;right:25%;filter:blur(22px)"></div></div><div class="gcard-info"><div class="gcard-col">BAYC</div><div class="gcard-name">Ape #5555</div><div class="gcard-bot">🤖 Watching</div></div><div class="gcard-overlay"><span class="badge b-watch">WATCH</span></div></div>
+
+    <div class="gcard"><div class="gcard-art g15"><div class="s" style="width:70px;height:70px;background:rgba(80,0,100,0.5);top:20%;left:20%;filter:blur(18px)"></div></div><div class="gcard-info"><div class="gcard-col">World of Women</div><div class="gcard-name">WoW #2222</div><div class="gcard-bot">⚡ Auto-mint</div></div><div class="gcard-overlay"><span class="badge b-soon">SOON</span></div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="sect">
+  <div class="fi" style="text-align:center;margin-bottom:56px;">
+    <span class="stag">// features</span>
+    <h2 class="big-title">BUILT TO <span>WIN.</span></h2>
+  </div>
+  <div class="feats fi">
+    <div class="f"><span class="f-num">01</span><span class="f-icon">🤖</span><div class="f-ttl">Auto-Mint</div><div class="f-desc">Monitors 24/7. Fires the moment any stage opens — WL, FCFS, GTD, or Public. Zero manual input required.</div></div>
+    <div class="f"><span class="f-num">02</span><span class="f-icon">⚡</span><div class="f-ttl">Instant Mint Now</div><div class="f-desc">Mint is live? Tap once, choose gas and quantity. Fires instantly with a pre-built, pre-signed transaction.</div></div>
+    <div class="f"><span class="f-num">03</span><span class="f-icon">👛</span><div class="f-ttl">Multi-Wallet</div><div class="f-desc">Fire up to 15 wallets simultaneously on the same Transfer event. Stack your allocation across all wallets.</div></div>
+    <div class="f"><span class="f-num">04</span><span class="f-icon">🎯</span><div class="f-ttl">Floor Sniper</div><div class="f-desc">Set a floor target on any OpenSea collection. Bot auto-buys the moment a listing hits your price.</div></div>
+    <div class="f"><span class="f-num">05</span><span class="f-icon">📋</span><div class="f-ttl">Copy-Mint</div><div class="f-desc">Track whale wallets in real time. The moment they mint, your bot mints too. Automatic, no delays.</div></div>
+    <div class="f"><span class="f-num">06</span><span class="f-icon">🔍</span><div class="f-ttl">Any Contract</div><div class="f-desc">Behavior-based function detection. Works on any verified contract — no hardcoded function names needed.</div></div>
+  </div>
+</section>
+
+<!-- SPEED -->
+<section id="speed" class="sect" style="padding-top:0;">
+  <div class="speed-grid">
+    <div class="fi">
+      <span class="stag">// speed</span>
+      <h2 class="big-title">BUILT TO BE<br><span>FIRST.</span></h2>
+      <div class="speed-stats">
+        <div class="sp"><span class="sp-val">&lt;200ms</span><div class="sp-txt"><strong>Transfer to broadcast</strong><span>WebSocket detects Transfer events. Pre-signed tx broadcasts with zero build time.</span></div></div>
+        <div class="sp"><span class="sp-val">3 RPC</span><div class="sp-txt"><strong>Multi-provider racing</strong><span>Races Alchemy, LlamaRPC and Ankr simultaneously. Fastest wins every call.</span></div></div>
+        <div class="sp"><span class="sp-val">−12s</span><div class="sp-txt"><strong>Predictive minting</strong><span>Submits tx 12s before mint opens. Lands in the exact opening block.</span></div></div>
+      </div>
+    </div>
+    <div class="term fi" style="transition-delay:0.15s;">
+      <div class="term-top">
+        <div class="td r"></div><div class="td y"></div><div class="td g"></div>
+        <span class="term-lbl">mint_bot · live logs</span>
+      </div>
+      <div class="term-body" id="termBody">
+        <span class="tl m" style="animation-delay:0.1s">✅ WS connected (ethereum)</span>
+        <span class="tl g2" style="animation-delay:0.4s">[TxCache] Pre-built 8 transactions</span>
+        <span class="tl m" style="animation-delay:0.7s">👁 Watching 8 projects</span>
+        <span class="tl" style="animation-delay:1.0s">&nbsp;</span>
+        <span class="tl p" style="animation-delay:1.4s">📊 PUBLIC opens in 12s — predictive tx</span>
+        <span class="tl r2" style="animation-delay:1.8s">🚀 Firing: Onchain Meows</span>
+        <span class="tl g2" style="animation-delay:2.1s">✅ Tx: 0xf99a22ac...29b9</span>
+        <span class="tl" style="animation-delay:2.4s">&nbsp;</span>
+        <span class="tl r2" style="animation-delay:2.8s">🚨 Transfer: Onchain Meows #1338</span>
+        <span class="tl g2" style="animation-delay:3.1s">⚡ Fast broadcast (pre-built)</span>
+        <span class="tl g2" style="animation-delay:3.4s">✅ Tx: 0xe2db2c63...bd8a</span>
+        <span class="tl y" style="animation-delay:3.7s">💰 Fee collected: 0.000333 ETH</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="sect" style="padding-top:0;">
+  <div class="fi" style="text-align:center;margin-bottom:56px;">
+    <span class="stag">// pricing</span>
+    <h2 class="big-title">SIMPLE <span>PRICING.</span></h2>
+    <p class="sect-sub" style="margin:0 auto;">Pay in ETH, USDT, or USDC. No recurring billing.</p>
+  </div>
+  <div class="price-grid fi">
+    <div class="pc">
+      <div class="pc-lbl">7-Day Trial</div>
+      <div class="pc-big">$5</div>
+      <div class="pc-per">one-time · 7 days access</div>
+      <ul class="pc-feats">
+        <li><span class="ck">✓</span> All features included</li>
+        <li><span class="ck">✓</span> Auto-mint & Mint Now</li>
+        <li><span class="ck">✓</span> Multi-wallet minting</li>
+        <li><span class="ck">✓</span> Sniper + Copy-mint</li>
+      </ul>
+      <div class="pc-tok">5 USDT / USDC · 0.002 ETH</div>
+      <a href="https://t.me/ade_mintbot" target="_blank" class="btn-outline" style="display:flex;justify-content:center;width:100%;">Try for $5</a>
+    </div>
+    <div class="pc hot">
+      <div class="pc-lbl">Monthly</div>
+      <div class="pc-big">$15</div>
+      <div class="pc-per">per month · 30 days access</div>
+      <ul class="pc-feats">
+        <li><span class="ck">✓</span> All features included</li>
+        <li><span class="ck">✓</span> Auto-mint & Mint Now</li>
+        <li><span class="ck">✓</span> Multi-wallet minting</li>
+        <li><span class="ck">✓</span> Sniper + Copy-mint</li>
+        <li><span class="ck">✓</span> Priority support</li>
+      </ul>
+      <div class="pc-tok">15 USDT / USDC · 0.006 ETH</div>
+      <a href="https://t.me/ade_mintbot" target="_blank" class="btn-red" style="display:flex;justify-content:center;width:100%;">Subscribe Now</a>
+    </div>
+  </div>
+</section>
+
+<!-- DOCS -->
+<section id="docs" class="sect" style="padding-top:0;">
+  <div class="fi" style="margin-bottom:48px;">
+    <span class="stag">// documentation</span>
+    <h2 class="big-title">GET STARTED <span>FAST.</span></h2>
+  </div>
+  <div class="docs-grid fi">
+    <div class="doc-nav">
+      <div class="doc-nav-lbl">Contents</div>
+      <ul>
+        <li><a href="#d1" class="active">Getting Started</a></li>
+        <li><a href="#d2">Add Wallet</a></li>
+        <li><a href="#d3">Track a Project</a></li>
+        <li><a href="#d4">Auto-Mint</a></li>
+        <li><a href="#d5">Mint Now</a></li>
+        <li><a href="#d6">Multi-Wallet</a></li>
+        <li><a href="#d7">Payment</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="doc-blk" id="d1">
+        <h3>🚀 Getting Started</h3>
+        <p>Mint_bot runs entirely inside Telegram. No app download, no browser extension needed.</p>
+        <div class="dstep"><div class="dsn">1</div><div class="dsb"><strong>Open the bot</strong><span>Search <code>@ade_mintbot</code> on Telegram or tap the button above.</span></div></div>
+        <div class="dstep"><div class="dsn">2</div><div class="dsb"><strong>Subscribe</strong><span>Tap <code>💳 Subscribe</code> from the menu. $5 trial (7 days) or $15/month.</span></div></div>
+        <div class="dstep"><div class="dsn">3</div><div class="dsb"><strong>Add a wallet</strong><span>Tap <code>💼 Wallet</code> → generate or import. Send ETH for mint price + gas.</span></div></div>
+        <div class="dstep"><div class="dsn">4</div><div class="dsb"><strong>Track & mint</strong><span>Paste an OpenSea URL or contract address. Set up Auto-Mint and you're live.</span></div></div>
+      </div>
+      <div class="doc-blk" id="d2">
+        <h3>💼 Add a Wallet</h3>
+        <p>Keys are encrypted in storage. Only add funds you're ready to deploy.</p>
+        <div class="dstep"><div class="dsn">1</div><div class="dsb"><strong>Tap 💼 Wallet from main menu</strong><span>Generate a new wallet or import an existing one with your private key.</span></div></div>
+        <div class="dstep"><div class="dsn">2</div><div class="dsb"><strong>Fund it</strong><span>Send ETH to your wallet address. Minimum ~0.01 ETH recommended for gas.</span></div></div>
+        <div class="dstep"><div class="dsn">3</div><div class="dsb"><strong>Add more for multi-wallet</strong><span>Add up to 15 wallets and fire them all simultaneously on a drop.</span></div></div>
+      </div>
+      <div class="doc-blk" id="d3">
+        <h3>🔍 Track a Project</h3>
+        <p>Paste any of the following directly into the bot chat:</p>
+        <div class="cblk">
+          <span class="g"># OpenSea URL</span><br>
+          https://opensea.io/collection/onchain-meows<br><br>
+          <span class="p"># Contract address (any chain)</span><br>
+          0x2Df2f5Caf75ecc5ee3B320575Fd77cBA8e97c065<br><br>
+          <span class="r"># Mint site URL</span><br>
+          https://mint.onchainmeows.xyz/
+        </div>
+        <p>Bot auto-detects mint function, reads price and shows live status instantly.</p>
+      </div>
+      <div class="doc-blk" id="d4">
+        <h3>🤖 Auto-Mint</h3>
+        <p>Tap <code>🤖 Auto-Mint</code> on a tracked project → choose gas → choose quantity. Bot watches 24/7 and fires when mint opens.</p>
+        <div class="cblk">
+          <span class="g">🐢 Low</span>    → 90% of base fee<br>
+          ⚡ Normal → 120% of base fee<br>
+          <span class="r">🚀 Fast</span>   → 150% of base fee<br>
+          <span class="p">🔥 Rapid</span>  → 200% (next block guaranteed)
+        </div>
+        <p>Use Fast or Rapid on competitive mints. Low is fine for free mints with no competition.</p>
+      </div>
+      <div class="doc-blk" id="d5">
+        <h3>⚡ Mint Now</h3>
+        <p>When mint is live, an <code>⚡ Mint Now!</code> button appears on the tracked project. Tap → gas → quantity. Fires instantly with pre-built transaction. No setup needed.</p>
+      </div>
+      <div class="doc-blk" id="d6">
+        <h3>👛 Multi-Wallet</h3>
+        <p>Add and fund multiple wallets, then tap <code>👛 Multi-Wallet</code> on any tracked project. All wallets fire simultaneously the moment a Transfer is detected.</p>
+      </div>
+      <div class="doc-blk" id="d7">
+        <h3>💳 Payment</h3>
+        <p>Send to the payment wallet shown in the bot on Ethereum mainnet. USDT, USDC, and ETH all accepted.</p>
+        <div class="cblk">
+          <span class="g">Trial (7 days):</span>  $5 USDT/USDC  · 0.002 ETH<br>
+          <span class="p">Monthly:</span>          $15 USDT/USDC · 0.006 ETH
+        </div>
+        <p>After paying tap <code>✅ I paid</code> and paste your tx hash. Subscription activates instantly after on-chain confirmation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-sec">
+  <div class="cta-inner fi">
+    <h2>READY TO MINT<br><span>FASTER?</span></h2>
+    <p>Start with a 7-day trial for $5. No recurring billing.</p>
+    <a href="https://t.me/ade_mintbot" target="_blank" class="btn-red" style="font-size:1rem;padding:16px 40px;">⚡ Start on Telegram</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">MINT<span>_BOT</span></div>
+  <ul class="f-links">
+    <li><a href="https://t.me/ade_mintbot" target="_blank">Telegram Bot</a></li>
+    <li><a href="https://t.me/Ade_Crypt" target="_blank">Support</a></li>
+    <li><a href="#docs">Docs</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div class="f-copy">Not financial advice. DYOR.</div>
+</footer>
+
+<script>
+// Cursor
+const cur = document.getElementById('cursor');
+const rin = document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx-5+'px';cur.style.top=my-5+'px';
+});
+(function anim(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;rin.style.left=rx-18+'px';rin.style.top=ry-18+'px';requestAnimationFrame(anim)})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.style.transform='scale(2.5)');
+  el.addEventListener('mouseleave',()=>cur.style.transform='scale(1)');
+});
+
+// Scroll reveal
+const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:0.08});
+document.querySelectorAll('.fi').forEach(el=>io.observe(el));
+
+// Docs nav
+const blks=document.querySelectorAll('.doc-blk');
+const links=document.querySelectorAll('.doc-nav a');
+window.addEventListener('scroll',()=>{
+  let cur='';blks.forEach(b=>{if(window.scrollY>=b.offsetTop-110)cur=b.id;});
+  links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+});
+
+// Terminal restart on scroll into view
+const tb=document.getElementById('termBody');
+const tio=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){
+    tb.querySelectorAll('.tl').forEach((l,i)=>{
+      l.style.opacity='0';l.style.animation='none';
+      setTimeout(()=>{l.style.animation=`fadeIn 0.3s ${i*0.27}s forwards`;},30);
+    });
+  }
+},{threshold:0.5});
+if(tb)tio.observe(tb.closest('.term'));
+</script>
+</body>
+</html>
